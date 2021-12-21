@@ -684,10 +684,14 @@ disassembler_t::disassembler_t(int xlen)
   DEFINE_XLOAD(lwu)
   DEFINE_XLOAD(ld)
 
+  DEFINE_XLOAD(dp_ld_inc)
+
   DEFINE_XSTORE(sb)
   DEFINE_XSTORE(sh)
   DEFINE_XSTORE(sw)
   DEFINE_XSTORE(sd)
+
+  DEFINE_XSTORE(dp_sd_inc)
 
   DEFINE_XAMO(amoadd_w)
   DEFINE_XAMO(amoswap_w)
@@ -798,6 +802,8 @@ disassembler_t::disassembler_t(int xlen)
   DEFINE_RTYPE(divuw);
   DEFINE_RTYPE(remw);
   DEFINE_RTYPE(remuw);
+
+  DEFINE_RTYPE(dp_inc3d);
 
   DEFINE_ITYPE_SHIFT(slli_uw);
   add_insn(new disasm_insn_t("zext.w", match_add_uw, mask_add_uw | mask_rs2, {&xrd, &xrs1}));

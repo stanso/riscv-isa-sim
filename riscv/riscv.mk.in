@@ -118,6 +118,9 @@ riscv_insn_ext_i = \
 	xori \
 	fence \
 	fence_i \
+	dp_inc3d \
+	dp_ld_inc \
+	dp_sd_inc \
 
 riscv_insn_ext_a = \
 	amoadd_d \
