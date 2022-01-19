@@ -199,6 +199,9 @@ struct state_t
   static const int max_pmp = 16;
   pmpaddr_csr_t_p pmpaddr[max_pmp];
 
+  static const int max_bindmem = 32;
+  csr_t_p bindmem[max_bindmem];
+
   csr_t_p fflags;
   csr_t_p frm;
   bool serialized; // whether timer CSRs are in a well-defined state

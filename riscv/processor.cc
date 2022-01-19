@@ -535,6 +535,10 @@ void state_t::reset(processor_t* const proc, reg_t max_isa)
     csrmap[addr] = std::make_shared<pmpcfg_csr_t>(proc, addr);
   }
 
+  for (int i = 0; i < max_bindmem; i++) {
+    csrmap[CSR_BINDMEM0 + i] = bindmem[i] = std::make_shared<basic_csr_t>(proc, CSR_BINDMEM0 + i, 0);
+  }
+
   csrmap[CSR_FFLAGS] = fflags = std::make_shared<float_csr_t>(proc, CSR_FFLAGS, FSR_AEXC >> FSR_AEXC_SHIFT, 0);
   csrmap[CSR_FRM] = frm = std::make_shared<float_csr_t>(proc, CSR_FRM, FSR_RD >> FSR_RD_SHIFT, 0);
   assert(FSR_AEXC_SHIFT == 0);  // composite_csr_t assumes fflags begins at bit 0
