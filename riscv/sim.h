@@ -69,7 +69,7 @@ public:
   // Callback for processors to let the simulation know they were reset.
   void proc_reset(unsigned id);
 
-private:
+protected:
   std::vector<std::pair<reg_t, mem_t*>> mems;
   std::vector<std::pair<reg_t, abstract_device_t*>> plugin_devices;
   mmu_t* debug_mmu;  // debug port into main memory
@@ -155,7 +155,7 @@ private:
   void main();
 
   context_t* host;
-  context_t target;
+  context_t* target;
   void reset();
   void idle();
   void read_chunk(addr_t taddr, size_t len, void* dst);
