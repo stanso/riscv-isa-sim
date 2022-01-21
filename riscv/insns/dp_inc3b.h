@@ -8,18 +8,18 @@ WRITE_REG(insn.rd(), sext_xlen(RD + 1));
 auto bind_reg = p->get_csr(CSR_BINDMEM0 + insn.rs1());
 if (bind_reg != 0)
 {
-  WRITE_REG(bind_reg, MMU.load_int64(insn.rs1()));
+  WRITE_REG(bind_reg, MMU.load_int64(RD));
 }
 
 bind_reg = p->get_csr(CSR_BINDMEM0 + insn.rs2());
 if (bind_reg != 0)
 {
-  WRITE_REG(bind_reg, MMU.load_int64(insn.rs2()));
+  WRITE_REG(bind_reg, MMU.load_int64(RD));
 }
 
 bind_reg = p->get_csr(CSR_BINDMEM0 + insn.rd());
 if (bind_reg != 0)
 {
-  WRITE_REG(bind_reg, MMU.load_int64(insn.rd()));
+  WRITE_REG(bind_reg, MMU.load_int64(RD));
 }
 
