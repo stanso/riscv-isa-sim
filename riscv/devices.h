@@ -35,12 +35,13 @@ class rom_device_t : public abstract_device_t {
 
 class mem_t : public abstract_device_t {
  public:
+  mem_t() {};
   mem_t(reg_t size);
   mem_t(const mem_t& that) = delete;
   ~mem_t();
 
-  bool load(reg_t addr, size_t len, uint8_t* bytes) { return load_store(addr, len, bytes, false); }
-  bool store(reg_t addr, size_t len, const uint8_t* bytes) { return load_store(addr, len, const_cast<uint8_t*>(bytes), true); }
+  virtual bool load(reg_t addr, size_t len, uint8_t* bytes) { return load_store(addr, len, bytes, false); }
+  virtual bool store(reg_t addr, size_t len, const uint8_t* bytes) { return load_store(addr, len, const_cast<uint8_t*>(bytes), true); }
   char* contents(reg_t addr);
   reg_t size() { return sz; }
 
