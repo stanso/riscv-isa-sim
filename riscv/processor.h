@@ -202,6 +202,8 @@ struct state_t
   static const int max_bindmem = 32;
   csr_t_p bindmem[max_bindmem];
 
+  csr_t_p vmmergeposcolli;
+
   csr_t_p fflags;
   csr_t_p frm;
   bool serialized; // whether timer CSRs are in a well-defined state

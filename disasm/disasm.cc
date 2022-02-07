@@ -1261,6 +1261,9 @@ disassembler_t::disassembler_t(int xlen)
   DISASM_OPIV__XI_INSN(vmsgtu,    0);
   DISASM_OPIV__XI_INSN(vmsgt,     1);
 
+  // DP custom
+  DEFINE_VECTOR_VV(vmmerge_pos_vv);
+
   //0b10_0000
   DISASM_OPIV_VXI_INSN(vsaddu,    0, v);
   DISASM_OPIV_VXI_INSN(vsadd,     1, v);

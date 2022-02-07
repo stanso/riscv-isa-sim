@@ -683,6 +683,7 @@ riscv_insn_ext_v_alu_int = \
 	vzext_vf2 \
 	vzext_vf4 \
 	vzext_vf8 \
+	vmmerge_pos_vv \
 
 riscv_insn_ext_v_alu_fp = \
 	vfadd_vf \
