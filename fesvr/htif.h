@@ -92,6 +92,7 @@ class htif_t : public chunked_memif_t
   unsigned int line_size;
   addr_t sig_addr; // torture
   addr_t sig_len; // torture
+ protected:
   addr_t tohost_addr;
   addr_t fromhost_addr;
   int exitcode;
@@ -99,6 +100,7 @@ class htif_t : public chunked_memif_t
 
   device_list_t device_list;
   syscall_t syscall_proxy;
+ private:
   bcd_t bcd;
   std::vector<device_t*> dynamic_devices;
   std::vector<std::string> payloads;
