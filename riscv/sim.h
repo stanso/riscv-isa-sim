@@ -113,8 +113,8 @@ protected:
 
   // memory-mapped I/O routines
   char* addr_to_mem(reg_t addr);
-  bool mmio_load(reg_t addr, size_t len, uint8_t* bytes);
-  bool mmio_store(reg_t addr, size_t len, const uint8_t* bytes);
+  bool mmio_load(reg_t addr, size_t len, uint8_t* bytes, bool atomic);
+  bool mmio_store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic);
   void make_dtb();
   void set_rom();
 

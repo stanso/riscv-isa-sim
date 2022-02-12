@@ -96,7 +96,7 @@ public:
 #endif
 
   // template for functions that load an aligned value from memory
-  #define load_func(type, prefix, xlate_flags) \
+  #define load_func_atomic(type, prefix, xlate_flags, atomic) \
     inline type##_t prefix##_##type(reg_t addr, bool require_alignment = false) { \
       if (unlikely(addr & (sizeof(type##_t)-1))) { \
         if (require_alignment) load_reserved_address_misaligned(addr); \
@@ -119,10 +119,38 @@ public:
         return data; \
       } \
       target_endian<type##_t> res; \
-      load_slow_path(addr, sizeof(type##_t), (uint8_t*)&res, (xlate_flags)); \
+      load_slow_path(addr, sizeof(type##_t), (uint8_t*)&res, (xlate_flags), atomic); \
       if (proc) READ_MEM(addr, size); \
       return from_target(res); \
     }
+
+  // load value from memory at aligned address; zero extend to register width
+  load_func_atomic(uint8, load_atomic, 0, true)
+  load_func_atomic(uint16, load_atomic, 0, true)
+  load_func_atomic(uint32, load_atomic, 0, true)
+  load_func_atomic(uint64, load_atomic, 0, true)
+
+  // load value from guest memory at aligned address; zero extend to register width
+  load_func_atomic(uint8, guest_load_atomic, RISCV_XLATE_VIRT, true)
+  load_func_atomic(uint16, guest_load_atomic, RISCV_XLATE_VIRT, true)
+  load_func_atomic(uint32, guest_load_atomic, RISCV_XLATE_VIRT, true)
+  load_func_atomic(uint64, guest_load_atomic, RISCV_XLATE_VIRT, true)
+  load_func_atomic(uint16, guest_load_x_atomic, RISCV_XLATE_VIRT|RISCV_XLATE_VIRT_HLVX, true)
+  load_func_atomic(uint32, guest_load_x_atomic, RISCV_XLATE_VIRT|RISCV_XLATE_VIRT_HLVX, true)
+
+  // load value from memory at aligned address; sign extend to register width
+  load_func_atomic(int8, load_atomic, 0, true)
+  load_func_atomic(int16, load_atomic, 0, true)
+  load_func_atomic(int32, load_atomic, 0, true)
+  load_func_atomic(int64, load_atomic, 0, true)
+
+  // load value from guest memory at aligned address; sign extend to register width
+  load_func_atomic(int8, guest_load_atomic, RISCV_XLATE_VIRT, true)
+  load_func_atomic(int16, guest_load_atomic, RISCV_XLATE_VIRT, true)
+  load_func_atomic(int32, guest_load_atomic, RISCV_XLATE_VIRT, true)
+  load_func_atomic(int64, guest_load_atomic, RISCV_XLATE_VIRT, true)
+
+  #define load_func(type, prefix, xlate_flags) load_func_atomic(type, prefix, xlate_flags, false)
 
   // load value from memory at aligned address; zero extend to register width
   load_func(uint8, load, 0)
@@ -158,7 +186,7 @@ public:
 #endif
 
   // template for functions that store an aligned value to memory
-  #define store_func(type, prefix, xlate_flags) \
+  #define store_func_atomic(type, prefix, xlate_flags, atomic) \
     void prefix##_##type(reg_t addr, type##_t val) { \
       if (unlikely(addr & (sizeof(type##_t)-1))) \
         return misaligned_store(addr, val, sizeof(type##_t), xlate_flags); \
@@ -179,7 +207,7 @@ public:
       } \
       else { \
         target_endian<type##_t> target_val = to_target(val); \
-        store_slow_path(addr, sizeof(type##_t), (const uint8_t*)&target_val, (xlate_flags)); \
+        store_slow_path(addr, sizeof(type##_t), (const uint8_t*)&target_val, (xlate_flags), atomic); \
         if (proc) WRITE_MEM(addr, val, size); \
       } \
   }
@@ -189,8 +217,8 @@ public:
     template<typename op> \
     type##_t amo_##type(reg_t addr, op f) { \
       try { \
-        auto lhs = load_##type(addr, true); \
-        store_##type(addr, f(lhs)); \
+        auto lhs = load_atomic_##type(addr, true); \
+        store_atomic_##type(addr, f(lhs)); \
         return lhs; \
       } catch (trap_load_address_misaligned& t) { \
         /* AMO faults should be reported as store faults */ \
@@ -225,6 +253,20 @@ public:
 #endif
     return (float128_t){load_uint64(addr), load_uint64(addr + 8)};
   }
+
+  #define store_func(type, prefix, xlate_flags) store_func_atomic(type, prefix, xlate_flags, false)
+
+  // store value to memory at aligned address
+  store_func_atomic(uint8, store_atomic, 0, true)
+  store_func_atomic(uint16, store_atomic, 0, true)
+  store_func_atomic(uint32, store_atomic, 0, true)
+  store_func_atomic(uint64, store_atomic, 0, true)
+
+  // store value to guest memory at aligned address
+  store_func_atomic(uint8, guest_store_atomic, RISCV_XLATE_VIRT, true)
+  store_func_atomic(uint16, guest_store_atomic, RISCV_XLATE_VIRT, true)
+  store_func_atomic(uint32, guest_store_atomic, RISCV_XLATE_VIRT, true)
+  store_func_atomic(uint64, guest_store_atomic, RISCV_XLATE_VIRT, true)
 
   // store value to memory at aligned address
   store_func(uint8, store, 0)
@@ -421,10 +463,10 @@ private:
 
   // handle uncommon cases: TLB misses, page faults, MMIO
   tlb_entry_t fetch_slow_path(reg_t addr);
-  void load_slow_path(reg_t addr, reg_t len, uint8_t* bytes, uint32_t xlate_flags);
-  void store_slow_path(reg_t addr, reg_t len, const uint8_t* bytes, uint32_t xlate_flags);
-  bool mmio_load(reg_t addr, size_t len, uint8_t* bytes);
-  bool mmio_store(reg_t addr, size_t len, const uint8_t* bytes);
+  void load_slow_path(reg_t addr, reg_t len, uint8_t* bytes, uint32_t xlate_flags, bool atomic);
+  void store_slow_path(reg_t addr, reg_t len, const uint8_t* bytes, uint32_t xlate_flags, bool atomic);
+  bool mmio_load(reg_t addr, size_t len, uint8_t* bytes, bool atomic);
+  bool mmio_store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic);
   bool mmio_ok(reg_t addr, access_type type);
   reg_t translate(reg_t addr, reg_t len, access_type type, uint32_t xlate_flags);
 

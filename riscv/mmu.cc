@@ -81,7 +81,7 @@ tlb_entry_t mmu_t::fetch_slow_path(reg_t vaddr)
   if (auto host_addr = sim->addr_to_mem(paddr)) {
     return refill_tlb(vaddr, paddr, host_addr, FETCH);
   } else {
-    if (!mmio_load(paddr, sizeof fetch_temp, (uint8_t*)&fetch_temp))
+    if (!mmio_load(paddr, sizeof fetch_temp, (uint8_t*)&fetch_temp, false))
       throw trap_instruction_access_fault(proc->state.v, vaddr, 0, 0);
     tlb_entry_t entry = {(char*)&fetch_temp - vaddr, paddr - vaddr};
     return entry;
@@ -123,23 +123,23 @@ bool mmu_t::mmio_ok(reg_t addr, access_type type)
   return true;
 }
 
-bool mmu_t::mmio_load(reg_t addr, size_t len, uint8_t* bytes)
+bool mmu_t::mmio_load(reg_t addr, size_t len, uint8_t* bytes, bool atomic)
 {
   if (!mmio_ok(addr, LOAD))
     return false;
 
-  return sim->mmio_load(addr, len, bytes);
+  return sim->mmio_load(addr, len, bytes, atomic);
 }
 
-bool mmu_t::mmio_store(reg_t addr, size_t len, const uint8_t* bytes)
+bool mmu_t::mmio_store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic)
 {
   if (!mmio_ok(addr, STORE))
     return false;
 
-  return sim->mmio_store(addr, len, bytes);
+  return sim->mmio_store(addr, len, bytes, atomic);
 }
 
-void mmu_t::load_slow_path(reg_t addr, reg_t len, uint8_t* bytes, uint32_t xlate_flags)
+void mmu_t::load_slow_path(reg_t addr, reg_t len, uint8_t* bytes, uint32_t xlate_flags, bool atomic)
 {
   reg_t paddr = translate(addr, len, LOAD, xlate_flags);
 
@@ -149,7 +149,7 @@ void mmu_t::load_slow_path(reg_t addr, reg_t len, uint8_t* bytes, uint32_t xlate
       tracer.trace(paddr, len, LOAD);
     else if (xlate_flags == 0)
       refill_tlb(addr, paddr, host_addr, LOAD);
-  } else if (!mmio_load(paddr, len, bytes)) {
+  } else if (!mmio_load(paddr, len, bytes, atomic)) {
     throw trap_load_access_fault((proc) ? proc->state.v : false, addr, 0, 0);
   }
 
@@ -161,7 +161,7 @@ void mmu_t::load_slow_path(reg_t addr, reg_t len, uint8_t* bytes, uint32_t xlate
   }
 }
 
-void mmu_t::store_slow_path(reg_t addr, reg_t len, const uint8_t* bytes, uint32_t xlate_flags)
+void mmu_t::store_slow_path(reg_t addr, reg_t len, const uint8_t* bytes, uint32_t xlate_flags, bool atomic)
 {
   reg_t paddr = translate(addr, len, STORE, xlate_flags);
 
@@ -178,7 +178,7 @@ void mmu_t::store_slow_path(reg_t addr, reg_t len, const uint8_t* bytes, uint32_
       tracer.trace(paddr, len, STORE);
     else if (xlate_flags == 0)
       refill_tlb(addr, paddr, host_addr, STORE);
-  } else if (!mmio_store(paddr, len, bytes)) {
+  } else if (!mmio_store(paddr, len, bytes, atomic)) {
     throw trap_store_access_fault((proc) ? proc->state.v : false, addr, 0, 0);
   }
 }

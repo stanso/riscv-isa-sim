@@ -13,8 +13,8 @@ class processor_t;
 
 class bus_t : public abstract_device_t {
  public:
-  bool load(reg_t addr, size_t len, uint8_t* bytes);
-  bool store(reg_t addr, size_t len, const uint8_t* bytes);
+  bool load(reg_t addr, size_t len, uint8_t* bytes, bool atomic);
+  bool store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic);
   void add_device(reg_t addr, abstract_device_t* dev);
 
   std::pair<reg_t, abstract_device_t*> find_device(reg_t addr);
@@ -26,8 +26,8 @@ class bus_t : public abstract_device_t {
 class rom_device_t : public abstract_device_t {
  public:
   rom_device_t(std::vector<char> data);
-  bool load(reg_t addr, size_t len, uint8_t* bytes);
-  bool store(reg_t addr, size_t len, const uint8_t* bytes);
+  bool load(reg_t addr, size_t len, uint8_t* bytes, bool atomic);
+  bool store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic);
   const std::vector<char>& contents() { return data; }
  private:
   std::vector<char> data;
@@ -40,8 +40,8 @@ class mem_t : public abstract_device_t {
   mem_t(const mem_t& that) = delete;
   ~mem_t();
 
-  virtual bool load(reg_t addr, size_t len, uint8_t* bytes) { return load_store(addr, len, bytes, false); }
-  virtual bool store(reg_t addr, size_t len, const uint8_t* bytes) { return load_store(addr, len, const_cast<uint8_t*>(bytes), true); }
+  virtual bool load(reg_t addr, size_t len, uint8_t* bytes, bool atomic) { return load_store(addr, len, bytes, false); }
+  virtual bool store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic) { return load_store(addr, len, const_cast<uint8_t*>(bytes), true); }
   char* contents(reg_t addr);
   reg_t size() { return sz; }
 
@@ -55,8 +55,8 @@ class mem_t : public abstract_device_t {
 class clint_t : public abstract_device_t {
  public:
   clint_t(std::vector<processor_t*>&, uint64_t freq_hz, bool real_time);
-  bool load(reg_t addr, size_t len, uint8_t* bytes);
-  bool store(reg_t addr, size_t len, const uint8_t* bytes);
+  bool load(reg_t addr, size_t len, uint8_t* bytes, bool atomic);
+  bool store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic);
   size_t size() { return CLINT_SIZE; }
   void increment(reg_t inc);
  private:
@@ -77,8 +77,8 @@ class mmio_plugin_device_t : public abstract_device_t {
   mmio_plugin_device_t(const std::string& name, const std::string& args);
   virtual ~mmio_plugin_device_t() override;
 
-  virtual bool load(reg_t addr, size_t len, uint8_t* bytes) override;
-  virtual bool store(reg_t addr, size_t len, const uint8_t* bytes) override;
+  virtual bool load(reg_t addr, size_t len, uint8_t* bytes, bool atomic) override;
+  virtual bool store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic) override;
 
  private:
   mmio_plugin_t plugin;

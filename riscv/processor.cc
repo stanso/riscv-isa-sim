@@ -1125,7 +1125,7 @@ void processor_t::register_base_instructions()
   build_opcode_map();
 }
 
-bool processor_t::load(reg_t addr, size_t len, uint8_t* bytes)
+bool processor_t::load(reg_t addr, size_t len, uint8_t* bytes, bool atomic)
 {
   switch (addr)
   {
@@ -1141,7 +1141,7 @@ bool processor_t::load(reg_t addr, size_t len, uint8_t* bytes)
   return false;
 }
 
-bool processor_t::store(reg_t addr, size_t len, const uint8_t* bytes)
+bool processor_t::store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic)
 {
   switch (addr)
   {

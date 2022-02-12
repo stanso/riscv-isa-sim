@@ -265,18 +265,18 @@ static bool paddr_ok(reg_t addr)
   return (addr >> MAX_PADDR_BITS) == 0;
 }
 
-bool sim_t::mmio_load(reg_t addr, size_t len, uint8_t* bytes)
+bool sim_t::mmio_load(reg_t addr, size_t len, uint8_t* bytes, bool atomic)
 {
   if (addr + len < addr || !paddr_ok(addr + len - 1))
     return false;
-  return bus.load(addr, len, bytes);
+  return bus.load(addr, len, bytes, atomic);
 }
 
-bool sim_t::mmio_store(reg_t addr, size_t len, const uint8_t* bytes)
+bool sim_t::mmio_store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic)
 {
   if (addr + len < addr || !paddr_ok(addr + len - 1))
     return false;
-  return bus.store(addr, len, bytes);
+  return bus.store(addr, len, bytes, atomic);
 }
 
 void sim_t::make_dtb()

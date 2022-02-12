@@ -121,7 +121,7 @@ void debug_module_t::add_device(bus_t *bus) {
   bus->add_device(DEBUG_START, this);
 }
 
-bool debug_module_t::load(reg_t addr, size_t len, uint8_t* bytes)
+bool debug_module_t::load(reg_t addr, size_t len, uint8_t* bytes, bool atomic)
 {
   addr = DEBUG_START + addr;
 
@@ -162,7 +162,7 @@ bool debug_module_t::load(reg_t addr, size_t len, uint8_t* bytes)
   return false;
 }
 
-bool debug_module_t::store(reg_t addr, size_t len, const uint8_t* bytes)
+bool debug_module_t::store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic)
 {
   D(
       switch (len) {

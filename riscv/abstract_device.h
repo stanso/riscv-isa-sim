@@ -7,8 +7,8 @@
 
 class abstract_device_t {
  public:
-  virtual bool load(reg_t addr, size_t len, uint8_t* bytes) = 0;
-  virtual bool store(reg_t addr, size_t len, const uint8_t* bytes) = 0;
+  virtual bool load(reg_t addr, size_t len, uint8_t* bytes, bool atomic) = 0;
+  virtual bool store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic) = 0;
   virtual ~abstract_device_t() {}
 };
 

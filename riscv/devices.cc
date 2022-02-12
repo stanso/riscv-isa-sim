@@ -12,7 +12,7 @@ void bus_t::add_device(reg_t addr, abstract_device_t* dev)
   devices[addr] = dev;
 }
 
-bool bus_t::load(reg_t addr, size_t len, uint8_t* bytes)
+bool bus_t::load(reg_t addr, size_t len, uint8_t* bytes, bool atomic)
 {
   // Find the device with the base address closest to but
   // less than addr (price-is-right search)
@@ -26,10 +26,10 @@ bool bus_t::load(reg_t addr, size_t len, uint8_t* bytes)
   // The iterator points to the device after this, so
   // go back by one item.
   it--;
-  return it->second->load(addr - it->first, len, bytes);
+  return it->second->load(addr - it->first, len, bytes, atomic);
 }
 
-bool bus_t::store(reg_t addr, size_t len, const uint8_t* bytes)
+bool bus_t::store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic)
 {
   // See comments in bus_t::load
   auto it = devices.upper_bound(addr);
@@ -37,7 +37,7 @@ bool bus_t::store(reg_t addr, size_t len, const uint8_t* bytes)
     return false;
   }
   it--;
-  return it->second->store(addr - it->first, len, bytes);
+  return it->second->store(addr - it->first, len, bytes, atomic);
 }
 
 std::pair<reg_t, abstract_device_t*> bus_t::find_device(reg_t addr)
@@ -81,14 +81,14 @@ mmio_plugin_device_t::~mmio_plugin_device_t()
   (*plugin.dealloc)(user_data);
 }
 
-bool mmio_plugin_device_t::load(reg_t addr, size_t len, uint8_t* bytes)
+bool mmio_plugin_device_t::load(reg_t addr, size_t len, uint8_t* bytes, bool atomic)
 {
-  return (*plugin.load)(user_data, addr, len, bytes);
+  return (*plugin.load)(user_data, addr, len, bytes, atomic);
 }
 
-bool mmio_plugin_device_t::store(reg_t addr, size_t len, const uint8_t* bytes)
+bool mmio_plugin_device_t::store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic)
 {
-  return (*plugin.store)(user_data, addr, len, bytes);
+  return (*plugin.store)(user_data, addr, len, bytes, atomic);
 }
 
 mem_t::mem_t(reg_t size)

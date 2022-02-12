@@ -27,7 +27,7 @@ clint_t::clint_t(std::vector<processor_t*>& procs, uint64_t freq_hz, bool real_t
 #define MTIMECMP_BASE	0x4000
 #define MTIME_BASE	0xbff8
 
-bool clint_t::load(reg_t addr, size_t len, uint8_t* bytes)
+bool clint_t::load(reg_t addr, size_t len, uint8_t* bytes, bool atomic)
 {
   increment(0);
   if (addr >= MSIP_BASE && addr + len <= MSIP_BASE + procs.size()*sizeof(msip_t)) {
@@ -45,7 +45,7 @@ bool clint_t::load(reg_t addr, size_t len, uint8_t* bytes)
   return true;
 }
 
-bool clint_t::store(reg_t addr, size_t len, const uint8_t* bytes)
+bool clint_t::store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic)
 {
   if (addr >= MSIP_BASE && addr + len <= MSIP_BASE + procs.size()*sizeof(msip_t)) {
     std::vector<msip_t> msip(procs.size());

@@ -5,7 +5,7 @@ rom_device_t::rom_device_t(std::vector<char> data)
 {
 }
 
-bool rom_device_t::load(reg_t addr, size_t len, uint8_t* bytes)
+bool rom_device_t::load(reg_t addr, size_t len, uint8_t* bytes, bool atomic)
 {
   if (addr + len > data.size())
     return false;
@@ -13,7 +13,7 @@ bool rom_device_t::load(reg_t addr, size_t len, uint8_t* bytes)
   return true;
 }
 
-bool rom_device_t::store(reg_t addr, size_t len, const uint8_t* bytes)
+bool rom_device_t::store(reg_t addr, size_t len, const uint8_t* bytes, bool atomic)
 {
   return false;
 }

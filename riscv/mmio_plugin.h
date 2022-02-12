@@ -22,13 +22,13 @@ typedef struct {
   // (void*), memory offset (reg_t), number of bytes to load (size_t), and the
   // buffer into which the loaded data should be written (uint8_t*). Return true
   // if the load is successful and false otherwise.
-  bool (*load)(void*, reg_t, size_t, uint8_t*);
+  bool (*load)(void*, reg_t, size_t, uint8_t*, bool);
 
   // Store some bytes to a memory address of the MMIO plugin. The parameters are
   // the user_data (void*), memory offset (reg_t), number of bytes to store
   // (size_t), and the buffer containing the data to be stored (const uint8_t*).
   // Return true if the store is successful and false otherwise.
-  bool (*store)(void*, reg_t, size_t, const uint8_t*);
+  bool (*store)(void*, reg_t, size_t, const uint8_t*, bool);
 
   // Deallocate the data allocated during the call to alloc. The parameter is a
   // pointer to the user data allocated during the call to alloc.
@@ -59,14 +59,14 @@ struct mmio_plugin_registration_t
     return reinterpret_cast<void*>(new T(std::string(args)));
   }
 
-  static bool load(void* self, reg_t addr, size_t len, uint8_t* bytes)
+  static bool load(void* self, reg_t addr, size_t len, uint8_t* bytes, bool atomic)
   {
-    return reinterpret_cast<T*>(self)->load(addr, len, bytes);
+    return reinterpret_cast<T*>(self)->load(addr, len, bytes, atomic);
   }
 
-  static bool store(void* self, reg_t addr, size_t len, const uint8_t* bytes)
+  static bool store(void* self, reg_t addr, size_t len, const uint8_t* bytes, bool atomic)
   {
-    return reinterpret_cast<T*>(self)->store(addr, len, bytes);
+    return reinterpret_cast<T*>(self)->store(addr, len, bytes, atomic);
   }
 
   static void dealloc(void* self)
