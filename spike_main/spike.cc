@@ -102,7 +102,7 @@ static void read_file_bytes(const char *filename,size_t fileoff,
 
   std::vector<char> read_buf(read_sz, 0);
   in.read(&read_buf[0], read_sz);
-  mem->store(memoff, read_sz, (uint8_t*)&read_buf[0]);
+  mem->store(memoff, read_sz, (uint8_t*)&read_buf[0], false);
 }
 
 bool sort_mem_region(const std::pair<reg_t, mem_t*> &a,
