@@ -199,8 +199,19 @@ struct state_t
   static const int max_pmp = 16;
   pmpaddr_csr_t_p pmpaddr[max_pmp];
 
+  // For 64 bit
+  // stores the bind value register register number
+  // TODO: can be compressed down to 3 64bit registers
   static const int max_bindmem = 32;
   csr_t_p bindmem[max_bindmem];
+
+  // vbindmemX
+  // - 5b - val reg
+  // - 59b - size in bytes
+  static const int max_vbindmem = 32;
+  csr_t_p vbindmem[max_vbindmem];
+  static const int max_vbindmemdesc = 32;
+  csr_t_p vbindmemdesc[max_vbindmemdesc];
 
   csr_t_p vmmergeposcolli;
 

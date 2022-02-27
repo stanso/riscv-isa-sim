@@ -539,6 +539,14 @@ void state_t::reset(processor_t* const proc, reg_t max_isa)
     csrmap[CSR_BINDMEM0 + i] = bindmem[i] = std::make_shared<basic_csr_t>(proc, CSR_BINDMEM0 + i, 0);
   }
 
+  for (int i = 0; i < max_vbindmem; i++) {
+    csrmap[CSR_VBINDMEM0 + i] = vbindmem[i] = std::make_shared<basic_csr_t>(proc, CSR_VBINDMEM0 + i, 0);
+  }
+
+  for (int i = 0; i < max_vbindmemdesc; i++) {
+    csrmap[CSR_VBINDMEMDESC0 + i] = vbindmemdesc[i] = std::make_shared<basic_csr_t>(proc, CSR_VBINDMEMDESC0 + i, 0);
+  }
+
   csrmap[CSR_VMMERGEPOSCOLLI] = vmmergeposcolli = std::make_shared<basic_csr_t>(proc, CSR_VMMERGEPOSCOLLI, 0);
 
   csrmap[CSR_FFLAGS] = fflags = std::make_shared<float_csr_t>(proc, CSR_FFLAGS, FSR_AEXC >> FSR_AEXC_SHIFT, 0);
