@@ -2,7 +2,6 @@
 #include "decode.h"
 #include <cstdint>
 require_vector(true);
-VI_CHECK_SLIDE(true);
 
 int csr = validate_csr(CSR_VBINDMEMDESC0 + insn.i_imm(), true);
 reg_t vbindmemdesc_val = p->get_csr(csr, insn, true);
@@ -17,12 +16,14 @@ for (int i = 0; i < 12; i++)
     if (cur_addr_reg_num != 0)
     {
         // read corresponding vbindmemX register
-        csr = validate_csr(CSR_VBINDMEM0 + cur_addr_reg_num, true);
+        csr = CSR_VBINDMEM0 + cur_addr_reg_num;
         reg_t vbindmem_raw = p->get_csr(csr, insn, true);
 
         // Get the val reg number & stream length left
         reg_t val_reg_num = vbindmem_raw & 31;
         reg_t stream_len_left = vbindmem_raw & ~((reg_t)31);
+
+        fprintf(stderr, "SPIKE: vssetlen, final csr = %lu", p->get_csr(csr, insn, true));
 
         // advance address
         reg_t ld_addr = READ_REG(cur_addr_reg_num) + 8 * adv_elem_cnt;

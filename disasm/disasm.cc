@@ -589,6 +589,11 @@ static void NOINLINE add_vector_viu_insn(disassembler_t* d, const char* name, ui
   d->add_insn(new disasm_insn_t(name, match, mask, {&vd, &vs2, &zimm5, opt, &vm}));
 }
 
+static void NOINLINE add_vector_viu_dp_insn(disassembler_t* d, const char* name, uint32_t match, uint32_t mask)
+{
+  d->add_insn(new disasm_insn_t(name, match, mask, {&vd, &xrs2, &zimm5, opt, &vm}));
+}
+
 static void NOINLINE add_vector_vvm_insn(disassembler_t* d, const char* name, uint32_t match, uint32_t mask)
 {
   d->add_insn(new disasm_insn_t(name, match, mask, {&vd, &vs2, &vs1, &v0}));
@@ -771,6 +776,10 @@ disassembler_t::disassembler_t(int xlen)
   DEFINE_ITYPE(andi);
   DEFINE_I1TYPE("sext.w", addiw);
   DEFINE_ITYPE(addiw);
+
+  // DP customization
+  DEFINE_ITYPE(vsstep);
+  DEFINE_ITYPE(vssetlen);
 
   DEFINE_ITYPE_SHIFT(slliw);
   DEFINE_ITYPE_SHIFT(srliw);
@@ -1170,6 +1179,7 @@ disassembler_t::disassembler_t(int xlen)
   #define DEFINE_VECTOR_VF(code) add_vector_vf_insn(this, #code, match_##code, mask_##code)
   #define DEFINE_VECTOR_VI(code) add_vector_vi_insn(this, #code, match_##code, mask_##code)
   #define DEFINE_VECTOR_VIU(code) add_vector_viu_insn(this, #code, match_##code, mask_##code)
+  #define DEFINE_VECTOR_VIU_DP(code) add_vector_viu_dp_insn(this, #code, match_##code, mask_##code)
 
   #define DISASM_OPIV_VXI_INSN(name, sign, suf) \
     DEFINE_VECTOR_VV(name##_##suf##v); \
@@ -1263,6 +1273,7 @@ disassembler_t::disassembler_t(int xlen)
 
   // DP custom
   DEFINE_VECTOR_VV(vmmerge_pos_vv);
+  DEFINE_VECTOR_VIU_DP(vsbindle64_v);
 
   //0b10_0000
   DISASM_OPIV_VXI_INSN(vsaddu,    0, v);

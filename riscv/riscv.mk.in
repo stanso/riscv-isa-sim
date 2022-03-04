@@ -124,6 +124,8 @@ riscv_insn_ext_i = \
 	dp_ld_inc \
 	dp_sd_inc \
 	dp_bindd \
+	vsstep \
+	vssetlen \
 
 riscv_insn_ext_a = \
 	amoadd_d \
@@ -684,6 +686,7 @@ riscv_insn_ext_v_alu_int = \
 	vzext_vf4 \
 	vzext_vf8 \
 	vmmerge_pos_vv \
+	vsbindle64_v \
 
 riscv_insn_ext_v_alu_fp = \
 	vfadd_vf \
