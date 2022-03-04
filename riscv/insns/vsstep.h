@@ -21,9 +21,9 @@ for (int i = 0; i < 12; i++)
 
         // Get the val reg number & stream length left
         reg_t val_reg_num = vbindmem_raw & 31;
-        reg_t stream_len_left = vbindmem_raw & ~((reg_t)31);
+        reg_t stream_len_left = (vbindmem_raw & ~((reg_t)31)) >> 5;
 
-        fprintf(stderr, "SPIKE: vssetlen, final csr = %lu", p->get_csr(csr, insn, true));
+        // fprintf(stderr, "SPIKE: vsstep, stream_len_left = %lu\n", stream_len_left);
 
         // advance address
         reg_t ld_addr = READ_REG(cur_addr_reg_num) + 8 * adv_elem_cnt;
@@ -37,20 +37,20 @@ for (int i = 0; i < 12; i++)
         for (reg_t i = 0; i < elt_per_reg; ++i)
         {
             auto &vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i, true);
-            if (i >= stream_len_left)
-                vd = UINT64_MAX;
-            else if (i + adv_elem_cnt < elt_per_reg)
+            if (i + adv_elem_cnt < elt_per_reg)
                 // shift elements to the front
                 vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i + adv_elem_cnt);
-            else
+            else if (i + adv_elem_cnt - elt_per_reg < stream_len_left)
                 // load new elements to the end
                 vd = MMU.load_uint64(baseAddr + (i - elt_per_reg) * sizeof(uint64_t));
+            else
+                vd = UINT64_MAX;
         }
-        if (stream_len_left > elt_per_reg)
+        if (stream_len_left < adv_elem_cnt)
             stream_len_left = 0;
         else
-            stream_len_left -= elt_per_reg;
-        p->set_csr(csr, stream_len_left);
+            stream_len_left -= adv_elem_cnt;
+        p->set_csr(csr, (stream_len_left << 5) | (vbindmem_raw & 31)); // need preserve the [0:4] bits from raw
         P.VU.vstart->write(0);
     }
 }

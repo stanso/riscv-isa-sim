@@ -55,11 +55,11 @@ int csr = CSR_VBINDMEM0 + rs2_num;
 reg_t old = p->get_csr(csr, insn, true);
 p->set_csr(csr, (old & ~((uint64_t)31)) | (rd_num & 31));
 
-fprintf(stderr, "SPIKE: rs2_num = %lu\n", rs2_num);
+// fprintf(stderr, "SPIKE: rs2_num = %lu\n", rs2_num);
 // 3. [ignored, not necessary in CAM HW] Store the # of binds to the corresponding vbindmemdescX[0:3]?
 // 4. Store the addr reg # to on of the slot in vbindmemdescX
 csr = validate_csr(CSR_VBINDMEMDESC0 + insn.v_zimm5(), true);
-fprintf(stderr, "SPIKE: v-zimm5 = %lu\n", insn.v_zimm5());
+// fprintf(stderr, "SPIKE: v-zimm5 = %lu\n", insn.v_zimm5());
 old = p->get_csr(csr, insn, true);
 int free_pos = -1;
 bool exist = false;
@@ -80,5 +80,4 @@ if (!exist)
 {
     p->set_csr(csr,  (rs2_num << (4 + free_pos * 5)) | old);
 }
-
-fprintf(stderr, "SPIKE: set csr = %lu\n", p->get_csr(csr, insn, true));
+// fprintf(stderr, "SPIKE: set csr = %lu\n", p->get_csr(csr, insn, true));

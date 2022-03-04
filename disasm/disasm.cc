@@ -779,7 +779,7 @@ disassembler_t::disassembler_t(int xlen)
 
   // DP customization
   DEFINE_ITYPE(vsstep);
-  DEFINE_ITYPE(vssetlen);
+  DEFINE_RTYPE(vssetlen);
 
   DEFINE_ITYPE_SHIFT(slliw);
   DEFINE_ITYPE_SHIFT(srliw);

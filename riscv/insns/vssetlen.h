@@ -2,11 +2,11 @@
 require_vector(true);
 
 // get corresponding vbindmemX register & the value
-int csr = validate_csr(CSR_VBINDMEM0 + insn.i_imm(), true);
+int csr = validate_csr(CSR_VBINDMEM0 + insn.rs1(), true);
 reg_t old = p->get_csr(csr, insn, true);
 
 // read the length from the length register & store into the vbindmemX register
-p->set_csr(csr, (old & 31) | READ_REG(insn.rs1()) << 5);
+p->set_csr(csr, (old & 31) | READ_REG(insn.rs2()) << 5);
 serialize();
 
-fprintf(stderr, "SPIKE: vssetlen, final csr = %lu", p->get_csr(csr, insn, true));
+// fprintf(stderr, "SPIKE: vssetlen, final csr = %lu\n", p->get_csr(csr, insn, true));
