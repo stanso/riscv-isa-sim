@@ -692,6 +692,7 @@ disassembler_t::disassembler_t(int xlen)
   DEFINE_XLOAD(lwu)
   DEFINE_XLOAD(ld)
 
+  // DP customization
   DEFINE_XLOAD(dp_ld_inc)
 
   DEFINE_XSTORE(sb)
@@ -699,6 +700,7 @@ disassembler_t::disassembler_t(int xlen)
   DEFINE_XSTORE(sw)
   DEFINE_XSTORE(sd)
 
+  // DP customization
   DEFINE_XSTORE(dp_sd_inc)
 
   DEFINE_XAMO(amoadd_w)
@@ -778,8 +780,9 @@ disassembler_t::disassembler_t(int xlen)
   DEFINE_ITYPE(addiw);
 
   // DP customization
-  DEFINE_ITYPE(vsstep);
+  DEFINE_ITYPE(vsstepe64);
   DEFINE_RTYPE(vssetlen);
+  DEFINE_RTYPE(vsgetlen);
 
   DEFINE_ITYPE_SHIFT(slliw);
   DEFINE_ITYPE_SHIFT(srliw);
@@ -817,7 +820,9 @@ disassembler_t::disassembler_t(int xlen)
 
   DEFINE_RTYPE(dp_inc3d);
   DEFINE_RTYPE(dp_inc3w);
+  DEFINE_RTYPE(dp_inc3h);
   DEFINE_RTYPE(dp_inc3b);
+  DEFINE_RTYPE(dp_inc2);
   DEFINE_RTYPE(dp_bindd);
 
   DEFINE_ITYPE_SHIFT(slli_uw);
@@ -1273,7 +1278,9 @@ disassembler_t::disassembler_t(int xlen)
 
   // DP custom
   DEFINE_VECTOR_VV(vmmerge_pos_vv);
-  DEFINE_VECTOR_VIU_DP(vsbindle64_v);
+  DEFINE_VECTOR_VIU_DP(vsbindl_v);
+  DEFINE_VECTOR_V(viota2_m);
+  DEFINE_VECTOR_VIU_DP(vsbinds_v);
 
   //0b10_0000
   DISASM_OPIV_VXI_INSN(vsaddu,    0, v);
