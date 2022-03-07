@@ -3,9 +3,11 @@
 #include <cstdint>
 require_vector(true);
 
-int csr = validate_csr(CSR_VBINDMEMDESC0 + insn.i_imm(), true);
+// int csr = validate_csr(CSR_VBINDMEMDESC0 + insn.i_imm(), true);
+int csr = CSR_VBINDMEMDESC0 + insn.i_imm();
 reg_t vbindmemdesc_val = p->get_csr(csr, insn, true);
 reg_t adv_elem_cnt = RS1;
+// serialize();
 
 // Iterate through all 12 slots in the descriptor
 for (int i = 0; i < 12; i++)
@@ -16,6 +18,7 @@ for (int i = 0; i < 12; i++)
     if (cur_addr_reg_num != 0)
     {
         // read corresponding vbindmemX register
+        // csr = validate_csr(CSR_VBINDMEM0 + cur_addr_reg_num, true);
         csr = CSR_VBINDMEM0 + cur_addr_reg_num;
         reg_t vbindmem_raw = p->get_csr(csr, insn, true);
 
@@ -52,5 +55,6 @@ for (int i = 0; i < 12; i++)
             stream_len_left -= adv_elem_cnt;
         p->set_csr(csr, (stream_len_left << 5) | (vbindmem_raw & 31)); // need preserve the [0:4] bits from raw
         P.VU.vstart->write(0);
+        // serialize();
     }
 }
