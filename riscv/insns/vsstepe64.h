@@ -31,14 +31,14 @@ for (int i = 0; i < 12; i++)
         // fprintf(stderr, "SPIKE: vsstep, stream_len_left = %lu\n", stream_len_left);
 
         // advance address
-        const reg_t baseAddr = READ_REG(cur_addr_reg_num) + 8 * adv_elem_cnt;
-        WRITE_REG(cur_addr_reg_num, sext_xlen(baseAddr));
+        const reg_t baseAddr = READ_REG(cur_addr_reg_num);
+        WRITE_REG(cur_addr_reg_num, sext_xlen(baseAddr + 8 * adv_elem_cnt));
+        // fprintf(stderr, "SPIKE: vsstepe64, base = %p, basep = %p\n", baseAddr, baseAddr + 8 * adv_elem_cnt);
 
         if (!is_store)
         {
-            // NOTE: not resecting vstart, nf, masking
+            // NOTE: not respecting vstart, nf, masking
             // load elements
-            const reg_t vd = insn.rd();
             const reg_t elt_per_reg = P.VU.vlenb / sizeof(uint64_t);
             for (reg_t i = 0; i < elt_per_reg; ++i)
             {
@@ -48,7 +48,7 @@ for (int i = 0; i < 12; i++)
                     vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i + adv_elem_cnt);
                 else if (i + adv_elem_cnt - elt_per_reg < stream_len_left)
                     // load new elements to the end
-                    vd = MMU.load_uint64(baseAddr + (i - elt_per_reg) * sizeof(uint64_t));
+                    vd = MMU.load_uint64(baseAddr + (i + adv_elem_cnt - elt_per_reg) * sizeof(uint64_t));
                 else
                     vd = UINT64_MAX;
             }
@@ -60,12 +60,25 @@ for (int i = 0; i < 12; i++)
         }
         else
         {
-            const reg_t vd = insn.rd();
             const reg_t elt_per_reg = P.VU.vlenb / sizeof(uint64_t);
-            const reg_t min_elem_cnt = adv_elem_cnt < elt_per_reg ? adv_elem_cnt : elt_per_reg;
-            for (reg_t i = 0; i < min_elem_cnt; ++i)
+            for (reg_t i = 0; i < elt_per_reg; ++i)
             {
-                MMU.store_uint64(baseAddr + i * sizeof(uint64_t), P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i));
+                auto &vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i, true);
+                if (i < adv_elem_cnt && i + adv_elem_cnt < elt_per_reg)
+                {
+                    // shift elements to the front
+                    MMU.store_uint64(baseAddr + i * sizeof(uint64_t), P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i));
+                    vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i + adv_elem_cnt);
+                }
+                else if (i < adv_elem_cnt)
+                {
+                    MMU.store_uint64(baseAddr + i * sizeof(uint64_t), P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i));
+                    vd = UINT64_MAX;
+                }
+                else if (i + adv_elem_cnt < elt_per_reg)
+                    vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i + adv_elem_cnt);
+                else
+                    vd = UINT64_MAX;
             }
         }
         P.VU.vstart->write(0);
