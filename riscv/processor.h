@@ -219,6 +219,8 @@ struct state_t
   csr_t_p frm;
   bool serialized; // whether timer CSRs are in a well-defined state
 
+  uint8_t internal_mem_state = 0;
+
   // When true, execute a single instruction and then enter debug mode.  This
   // can only be set by executing dret.
   enum {
