@@ -195,7 +195,7 @@ void sim_t::main()
 int sim_t::run()
 {
   host = context_t::current();
-  target->init(sim_thread_main, this);
+  target.init(sim_thread_main, this);
   return htif_t::run();
 }
 
@@ -385,7 +385,7 @@ void sim_t::reset()
 
 void sim_t::idle()
 {
-  target->switch_to();
+  target.switch_to();
 }
 
 void sim_t::read_chunk(addr_t taddr, size_t len, void* dst)
