@@ -37,9 +37,9 @@ for (int i = 0; i < 12; i++)
         // fprintf(stderr, "SPIKE: vsstep, stream_len_left = %lu\n", stream_len_left);
 
         const reg_t baseAddr = READ_REG(cur_addr_reg_num);
+
         // advance address
         // WRITE_REG(cur_addr_reg_num, sext_xlen(baseAddr + 8 * (adv_elem_cnt < stream_len_left ? adv_elem_cnt : stream_len_left)));
-
         // fprintf(stderr, "SPIKE: vsstepe64, base = %p, basep = %p\n", baseAddr, baseAddr + 8 * adv_elem_cnt);
 
         if (!is_store)
@@ -60,20 +60,19 @@ for (int i = 0; i < 12; i++)
                 {
                     // load new elements to the end
                     vd = MMU.load_uint64(baseAddr + (i + adv_elem_cnt - elt_per_reg) * sizeof(uint64_t));
-                    // advance address
-                    WRITE_REG(cur_addr_reg_num, sext_xlen(baseAddr + 8));
-                    stream_len_left --;
-                    p->set_csr(csr, (stream_len_left << 5) | (vbindmem_raw & 31)); // update stream length, need preserve the [0:4] bits from raw
                     WRITE_RD(RD + 1);
                 }
                 else
                     vd = UINT64_MAX;
             }
+            // advance address
+            WRITE_REG(cur_addr_reg_num, sext_xlen(baseAddr + 8 * (adv_elem_cnt < stream_len_left ? adv_elem_cnt : stream_len_left)));
+            if (stream_len_left < adv_elem_cnt)
+                stream_len_left = 0;
+            else
+                stream_len_left -= adv_elem_cnt;
+            p->set_csr(csr, (stream_len_left << 5) | (vbindmem_raw & 31)); // update stream length, need preserve the [0:4] bits from raw
             P.VU.vstart->write(0);
-            // if (stream_len_left < adv_elem_cnt)
-            //     stream_len_left = 0;
-            // else
-            //     stream_len_left -= adv_elem_cnt;
         }
         else
         {
@@ -89,7 +88,6 @@ for (int i = 0; i < 12; i++)
                     // shift elements to the front
                     MMU.store_uint64(baseAddr + i * sizeof(uint64_t), P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i));
                     vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i + adv_elem_cnt);
-                    WRITE_REG(cur_addr_reg_num, sext_xlen(baseAddr + 8));
                     stream_len_left ++;
                     p->set_csr(csr, (stream_len_left << 5) | (vbindmem_raw & 31)); // update stream length, need preserve the [0:4] bits from raw
                     WRITE_RD(RD + 1);
@@ -98,7 +96,6 @@ for (int i = 0; i < 12; i++)
                 {
                     MMU.store_uint64(baseAddr + i * sizeof(uint64_t), P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i));
                     vd = UINT64_MAX;
-                    WRITE_REG(cur_addr_reg_num, sext_xlen(baseAddr + 8));
                     stream_len_left ++;
                     p->set_csr(csr, (stream_len_left << 5) | (vbindmem_raw & 31)); // update stream length, need preserve the [0:4] bits from raw
                     WRITE_RD(RD + 1);
@@ -108,6 +105,7 @@ for (int i = 0; i < 12; i++)
                 else
                     vd = UINT64_MAX;
             }
+            WRITE_REG(cur_addr_reg_num, sext_xlen(baseAddr + 8 * adv_elem_cnt));
             P.VU.vstart->write(0);
         }
 
