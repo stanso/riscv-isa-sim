@@ -691,6 +691,7 @@ riscv_insn_ext_v_alu_int = \
 	vsbindl_v \
 	viota2_m \
 	vsbinds_v \
+	vsunbind_v \
 
 riscv_insn_ext_v_alu_fp = \
 	vfadd_vf \

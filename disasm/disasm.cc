@@ -781,8 +781,8 @@ disassembler_t::disassembler_t(int xlen)
 
   // DP customization
   DEFINE_ITYPE(vsstepe64);
-  DEFINE_RTYPE(vssetlen);
-  DEFINE_RTYPE(vsgetlen);
+  DEFINE_ITYPE(vssetlen);
+  DEFINE_ITYPE(vsgetlen);
 
   DEFINE_ITYPE_SHIFT(slliw);
   DEFINE_ITYPE_SHIFT(srliw);
@@ -1281,6 +1281,7 @@ disassembler_t::disassembler_t(int xlen)
   DEFINE_VECTOR_VIU_DP(vsbindl_v);
   DEFINE_VECTOR_V(viota2_m);
   DEFINE_VECTOR_VIU_DP(vsbinds_v);
+  DEFINE_VECTOR_VIU_DP(vsunbind_v);
 
   //0b10_0000
   DISASM_OPIV_VXI_INSN(vsaddu,    0, v);

@@ -1,6 +1,5 @@
 require_rv64;
 
-auto bind_reg = p->get_csr(CSR_BINDMEM0 + insn.rs1());
 if (STATE.internal_mem_state == 0)
 {
   WRITE_REG(insn.rs1(), sext_xlen(RS1 + 8));
@@ -9,9 +8,11 @@ if (STATE.internal_mem_state == 0)
   STATE.internal_mem_state = 1;
 }
 
+// Generate ld for dp_bindld
+auto bind_reg = p->get_csr(CSR_BINDMEM0 + insn.rs1());
+
 if (STATE.internal_mem_state == 1)
 {
-  // Generate ld for dp_bindld
   if (bind_reg != 0)
   {
     WRITE_REG(bind_reg, MMU.load_int64(RS1));
