@@ -16,9 +16,11 @@ for (int i = 0; i < 12; i++)
 {
     if (i < STATE.internal_mem_state)
         continue;
+    STATE.internal_mem_state = i;
 
     // Get the current addr reg
     reg_t cur_addr_reg_num = (vbindmemdesc_val >> (4 + i * 5)) & 31;
+    // fprintf(stderr, "SPIKE: vsstepe64, addr_num = %lu\n", cur_addr_reg_num);
     // if this is not an empty slot
     if (cur_addr_reg_num != 0)
     {
@@ -47,19 +49,19 @@ for (int i = 0; i < 12; i++)
             // NOTE: not respecting vstart, nf, masking
             // load elements
             const reg_t elt_per_reg = P.VU.vlenb / sizeof(uint64_t);
-            for (reg_t i = 0; i < elt_per_reg; ++i)
+            for (reg_t j = 0; j < elt_per_reg; ++j)
             {
-                if (i < P.VU.vstart->read())
+                if (j < P.VU.vstart->read())
                     continue;
-                P.VU.vstart->write(i);
-                auto &vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i, true);
-                if (i + adv_elem_cnt < elt_per_reg)
+                P.VU.vstart->write(j);
+                auto &vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, j, true);
+                if (j + adv_elem_cnt < elt_per_reg)
                     // shift elements to the front
-                    vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i + adv_elem_cnt);
-                else if (i + adv_elem_cnt - elt_per_reg < stream_len_left)
+                    vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, j + adv_elem_cnt);
+                else if (j + adv_elem_cnt - elt_per_reg < stream_len_left)
                 {
                     // load new elements to the end
-                    vd = MMU.load_uint64(baseAddr + (i + adv_elem_cnt - elt_per_reg) * sizeof(uint64_t));
+                    vd = MMU.load_uint64(baseAddr + (j + adv_elem_cnt - elt_per_reg) * sizeof(uint64_t));
                     WRITE_RD(RD + 1);
                 }
                 else
@@ -76,32 +78,38 @@ for (int i = 0; i < 12; i++)
         }
         else
         {
+            // fprintf(stderr, "SPIKE: vsstepe64, STORE: base = %p, adv_cnt = %lu, addr_num = %lu, val_num = %lu\n", baseAddr, adv_elem_cnt, cur_addr_reg_num, val_reg_num);
             const reg_t elt_per_reg = P.VU.vlenb / sizeof(uint64_t);
-            for (reg_t i = 0; i < elt_per_reg; ++i)
+            for (reg_t j = 0; j < elt_per_reg; ++j)
             {
-                if (i < P.VU.vstart->read())
+                // fprintf(stderr, "SPIKE: vsstepe64, j = %lu\n", j);
+                if (j < P.VU.vstart->read())
                     continue;
-                P.VU.vstart->write(i);
-                auto &vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i, true);
-                if (i < adv_elem_cnt && i + adv_elem_cnt < elt_per_reg)
+                P.VU.vstart->write(j);
+                auto &vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, j, true);
+                if (j < adv_elem_cnt && j + adv_elem_cnt < elt_per_reg)
                 {
                     // shift elements to the front
-                    MMU.store_uint64(baseAddr + i * sizeof(uint64_t), P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i));
-                    vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i + adv_elem_cnt);
+                    MMU.store_uint64(baseAddr + j * sizeof(uint64_t), P.VU.elt<type_sew_t<e64>::type>(val_reg_num, j));
+                    vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, j + adv_elem_cnt);
                     stream_len_left ++;
                     p->set_csr(csr, (stream_len_left << 5) | (vbindmem_raw & 31)); // update stream length, need preserve the [0:4] bits from raw
                     WRITE_RD(RD + 1);
                 }
-                else if (i < adv_elem_cnt)
+                else if (j < adv_elem_cnt)
                 {
-                    MMU.store_uint64(baseAddr + i * sizeof(uint64_t), P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i));
+                    // fprintf(stderr, "SPIKE: vsstepe64, 1\n");
+                    MMU.store_uint64(baseAddr + j * sizeof(uint64_t), P.VU.elt<type_sew_t<e64>::type>(val_reg_num, j));
+                    // fprintf(stderr, "SPIKE: vsstepe64, 2\n");
                     vd = UINT64_MAX;
                     stream_len_left ++;
+                    // fprintf(stderr, "SPIKE: vsstepe64, 3\n");
                     p->set_csr(csr, (stream_len_left << 5) | (vbindmem_raw & 31)); // update stream length, need preserve the [0:4] bits from raw
+                    // fprintf(stderr, "SPIKE: vsstepe64, 4\n");
                     WRITE_RD(RD + 1);
                 }
-                else if (i + adv_elem_cnt < elt_per_reg)
-                    vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, i + adv_elem_cnt);
+                else if (j + adv_elem_cnt < elt_per_reg)
+                    vd = P.VU.elt<type_sew_t<e64>::type>(val_reg_num, j + adv_elem_cnt);
                 else
                     vd = UINT64_MAX;
             }
@@ -112,7 +120,7 @@ for (int i = 0; i < 12; i++)
         // p->set_csr(csr, (stream_len_left << 5) | (vbindmem_raw & 31)); // update stream length, need preserve the [0:4] bits from raw
         // serialize();
     }
-    STATE.internal_mem_state = i;
 }
 
 STATE.internal_mem_state = 0;
+// fprintf(stderr, "SPIKE: vsstepe64, done\n");
