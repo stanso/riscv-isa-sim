@@ -122,6 +122,7 @@ riscv_insn_ext_i = \
 	dp_inc3w \
 	dp_inc3h \
 	dp_inc3b \
+	dp_inc2 \
 	dp_ld_inc \
 	dp_sd_inc \
 	dp_bindd \
