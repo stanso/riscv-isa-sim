@@ -18,8 +18,29 @@ for (int i = 0; i < 12; i++)
         // csr = validate_csr(CSR_VBINDMEM0 + cur_addr_reg_num, true);
         csr = CSR_VBINDMEM0 + cur_addr_reg_num;
         reg_t vbindmem_raw = p->get_csr(csr, insn, true);
+        reg_t val_reg_num = vbindmem_raw & 31;
         // read the length from the length register & store into the vbindmemX register
         p->set_csr(csr, (vbindmem_raw & 31) | (READ_REG(insn.rs1()) << 5));
+
+        // set all elements of the vector register to end markers
+        for (reg_t j = 0; j < P.VU.vlmax; ++j)
+        {
+            switch (P.VU.vsew)
+            {
+            case e8:
+                P.VU.elt<type_sew_t<e8>::type>(val_reg_num, j, true) = UINT8_MAX;
+                break;
+            case e16:
+                P.VU.elt<type_sew_t<e16>::type>(val_reg_num, j, true) = UINT16_MAX;
+                break;
+            case e32:
+                P.VU.elt<type_sew_t<e32>::type>(val_reg_num, j, true) = UINT32_MAX;
+                break;
+            default:
+                P.VU.elt<type_sew_t<e64>::type>(val_reg_num, j, true) = UINT64_MAX;
+                break;
+            }
+        }
     }
 }
 

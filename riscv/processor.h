@@ -6,6 +6,7 @@
 #include "config.h"
 #include "trap.h"
 #include "abstract_device.h"
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -219,7 +220,7 @@ struct state_t
   csr_t_p frm;
   bool serialized; // whether timer CSRs are in a well-defined state
 
-  uint8_t internal_mem_state = 0;
+  uint8_t internal_mem_state = 0; // keep a processor state for memory instructions to re-run
 
   // When true, execute a single instruction and then enter debug mode.  This
   // can only be set by executing dret.

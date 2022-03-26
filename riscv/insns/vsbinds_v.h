@@ -13,7 +13,8 @@ reg_t rs2_num = insn.rs2();
 // 2. Store val register number into the vbindmemX[0:4]
 int csr = CSR_VBINDMEM0 + rs2_num;
 reg_t old = p->get_csr(csr, insn, true);
-p->set_csr(csr, (old & ~((uint64_t)31)) | (rd_num & 31));
+// p->set_csr(csr, (old & ~((uint64_t)31)) | (rd_num & 31));
+p->set_csr(csr, (rd_num & 31)); // clear the length counter
 // serialize();
 
 // fprintf(stderr, "SPIKE: rs2_num = %lu\n", rs2_num);
