@@ -10,13 +10,22 @@ context_t::context_t()
 #ifndef USE_UCONTEXT
     mutex(PTHREAD_MUTEX_INITIALIZER),
     cond(PTHREAD_COND_INITIALIZER), flag(0)
+#elif defined(USE_FCONTEXT)
+    context()
 #else
     context(new ucontext_t)
 #endif
 {
 }
 
-#ifdef USE_UCONTEXT
+#ifdef USE_FCONTEXT
+boost::context::continuation context_t::wrapper(boost::context::continuation && c)
+{
+  cur->context = c.resume();
+  cur->func(cur->arg);
+  return std::move(c);
+}
+#elif defined(USE_UCONTEXT)
 #ifndef GLIBC_64BIT_PTR_BUG
 void context_t::wrapper(context_t* ctx)
 {
@@ -46,7 +55,12 @@ void context_t::init(void (*f)(void*), void* a)
   arg = a;
   creator = current();
 
-#ifdef USE_UCONTEXT
+#ifdef USE_FCONTEXT
+  cur = this;
+  creator->context = boost::context::callcc(context_t::wrapper);
+  cur = creator;
+
+#elif defined(USE_UCONTEXT)
   getcontext(context.get());
   context->uc_link = creator->context.get();
   context->uc_stack.ss_size = 64*1024;
@@ -76,12 +90,19 @@ void context_t::init(void (*f)(void*), void* a)
 context_t::~context_t()
 {
   assert(this != cur);
+  #ifdef USE_FCONTEXT
+    delete sp;
+  #endif
 }
 
 void context_t::switch_to()
 {
   assert(this != cur);
-#ifdef USE_UCONTEXT
+#ifdef USE_FCONTEXT
+  context_t* prev = cur;
+  cur = this;
+  prev->context = prev->context.resume();
+#elif defined(USE_UCONTEXT)
   context_t* prev = cur;
   cur = this;
   if (swapcontext(prev->context.get(), context.get()) != 0)
@@ -104,7 +125,9 @@ context_t* context_t::current()
   if (cur == NULL)
   {
     cur = new context_t;
-#ifdef USE_UCONTEXT
+#ifdef USE_FCONTEXT
+
+#elif defined(USE_UCONTEXT)
     getcontext(cur->context.get());
 #else
     cur->thread = pthread_self();

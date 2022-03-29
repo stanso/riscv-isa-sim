@@ -5,6 +5,11 @@
 
 #include <pthread.h>
 
+//#define USE_FCONTEXT
+#ifdef USE_FCONTEXT
+#include <boost/context/continuation.hpp>
+#endif
+
 #if defined(__GLIBC__)
 # undef USE_UCONTEXT
 # define USE_UCONTEXT
@@ -35,7 +40,11 @@ class context_t
   context_t* creator;
   void (*func)(void*);
   void* arg;
-#ifdef USE_UCONTEXT
+#ifdef USE_FCONTEXT
+  boost::context::continuation context;
+  static boost::context::continuation wrapper(boost::context::continuation && c);
+  void* sp;
+#elif defined(USE_UCONTEXT)
   std::unique_ptr<ucontext_t> context;
 #ifndef GLIBC_64BIT_PTR_BUG
   static void wrapper(context_t*);
